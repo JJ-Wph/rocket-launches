@@ -6,6 +6,10 @@
     <p><b>Launch location:</b> {{launch.pad.location.name}}</p>
     <div class="countdownDiv">
       <h1>{{countdownTime(launch.net)}}</h1>
+      <p>{{days}}</p>
+      <p>{{hours}}</p>
+      <p>{{minutes}}</p>
+      <p>{{seconds}}</p>
       <h2>Days : Hrs : Min : Sec</h2>
     </div>
   </div>
@@ -25,9 +29,9 @@
     let minutes = ref(0);
     let seconds = ref(0);
 
-    function currentMoment() {
+    const currentMoment = setInterval(function() {
       currentDate.value = new Date()
-    }
+    }, 1000)
 
     function getData() {
       axios.get('https://lldev.thespacedevs.com/2.2.0/launch/upcoming/')
@@ -41,6 +45,7 @@
       for(let i = 0; i < rocketsList.value[i].net.length; i++) {
         rocketsList.value[i].net = new Date(rocketsList.value[i].net);
         rocketsList.value[i].net = rocketsList.value[i].net - currentDate.value;
+
       }
     }
 
@@ -74,24 +79,27 @@
         return days.value + ' : ' + hours.value + '  :  ' + minutes.value + '  :  ' + seconds.value;
     }
 
-    const countdownInterval = setInterval(currentMoment, 1000);
-    const recalcTimeout = setTimeout(recalcRemainingTimeForRockets, 500)
+
+    const recalcTimeout = setTimeout(recalcRemainingTimeForRockets, 100)
 
     onMounted(() => {
       getData()
     });
 
     onUnmounted(() => {
-      clearInterval(countdownInterval)
+      clearInterval(currentMoment)
     })
 
     return {
       getData,
+      days,
+      hours,
+      minutes,
+      seconds,
       currentMoment,
       rocketsList,
       recalcRemainingTimeForRockets,
       countdownTime,
-      countdownInterval,
       recalcTimeout,
     }
   }

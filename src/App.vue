@@ -5,102 +5,94 @@
     <p>{{launch.launch_service_provider.name}}</p>
     <p><b>Launch location:</b> {{launch.pad.location.name}}</p>
     <div class="countdownDiv">
-      <h1>{{countdownTime(launch.net)}}</h1>
-      <p>{{days}}</p>
-      <p>{{hours}}</p>
-      <p>{{minutes}}</p>
-      <p>{{seconds}}</p>
-      <h2>Days : Hrs : Min : Sec</h2>
+    <h2>{{launch.launch_time}}</h2>
+    <h2>{{dateFormat}}</h2>
     </div>
   </div>
 </template>
 
 <script>
-  import {onMounted, onUnmounted, ref} from 'vue'
+  import {onUnmounted, ref} from 'vue'
   import axios from 'axios'
   export default {
   name: 'App',
 
   setup(){
-    const rocketsList = ref('');
-    const currentDate = ref('');
+    let rocketsList = ref(null);
+    let launchDate = ref(null);
+    let currentDate = ref(null);
+    let dateFormat = ref(0);
     let days = ref(0);
     let hours = ref(0);
     let minutes = ref(0);
     let seconds = ref(0);
 
     const currentMoment = setInterval(function() {
-      currentDate.value = new Date()
+        currentDate.value = new Date().getTime();
     }, 1000)
 
     function getData() {
-      axios.get('https://lldev.thespacedevs.com/2.2.0/launch/upcoming/')
-      .then(response => {
-        rocketsList.value = response.data.results;
-        console.log(rocketsList.value);
-      })
-    }
-
-    function recalcRemainingTimeForRockets() {
-      for(let i = 0; i < rocketsList.value[i].net.length; i++) {
-        rocketsList.value[i].net = new Date(rocketsList.value[i].net);
-        rocketsList.value[i].net = rocketsList.value[i].net - currentDate.value;
-
+        axios.get('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=6')
+        .then(response => {
+          rocketsList.value = response.data.results;
+          console.log(rocketsList.value);
+        })
       }
-    }
 
-    function countdownTime(v) {
-        v = v - currentDate.value;
-        seconds.value = parseInt(v/1000);
-        minutes.value = parseInt(seconds.value/60);
-        hours.value = parseInt(minutes.value/60);
-        days.value = parseInt(hours.value/24);
+    const recalcRemainingTimeForRockets = setInterval (function() {
+      for(let i = 0; i <= rocketsList.value[i].net.length; i++) {
+          launchDate.value = new Date(rocketsList.value[i].net).getTime();
+          launchDate.value = launchDate.value - currentDate.value;
+          console.log(launchDate.value);
+          days.value = Math.floor(launchDate.value / (1000*60*60*24));
+          hours.value = Math.floor((launchDate.value % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          minutes.value = Math.floor((launchDate.value % (1000 * 60 * 60)) / (1000 * 60));
+          seconds.value = Math.floor((launchDate.value % (1000 * 60)) / 1000);
 
-        hours.value = hours.value % 24;
-        minutes.value = minutes.value % 60
-        seconds.value = seconds.value % 60
-
-        if(seconds.value <= 9){
+          if(seconds.value <= 9){
           seconds.value = "0" + seconds.value
-        }
+          }
+          if(minutes.value <= 9){
+            minutes.value = "0" + minutes.value
+          }
+          if(hours.value <= 9){
+            hours.value = "0" + hours.value
+          }
+          if(days.value <= 9){
+            days.value = "0" + days.value
+          }
 
-        if(minutes.value <= 9){
-          minutes.value = "0" + minutes.value
-        }
+          if(launchDate.value < 0) {
+            rocketsList.value[i].launch_time = 'Launched';
+            dateFormat.value = ''
+          } else {
+            rocketsList.value[i].launch_time = days.value + ' : ' + hours.value + '  :  ' + minutes.value + '  :  ' + seconds.value;
+            dateFormat.value = 'Days : Hrs : Min : Sec';
+          }
+      }
+    }, 1000)
 
-        if(hours.value <= 9){
-          hours.value = "0" + hours.value
-        }
-
-        if(days.value <= 9){
-          days.value = "0" + days.value
-        }
-
-        return days.value + ' : ' + hours.value + '  :  ' + minutes.value + '  :  ' + seconds.value;
-    }
-
-
-    const recalcTimeout = setTimeout(recalcRemainingTimeForRockets, 100)
-
-    onMounted(() => {
-      getData()
-    });
+    const getDataTimeout = setTimeout(getData, 200)
+    const recalcTimeout = setTimeout(recalcRemainingTimeForRockets, 1500)
 
     onUnmounted(() => {
-      clearInterval(currentMoment)
+      clearInterval(recalcTimeout)
     })
 
     return {
       getData,
-      days,
-      hours,
-      minutes,
-      seconds,
+      currentDate,
+      launchDate,
+      dateFormat,
       currentMoment,
       rocketsList,
       recalcRemainingTimeForRockets,
-      countdownTime,
+      getDataTimeout,
       recalcTimeout,
+      days,
+      hours,
+      minutes,
+      seconds
     }
   }
 }
@@ -143,6 +135,11 @@ img {
 
 p {
   margin: 0.5rem
+}
+
+.countdownDiv {
+  display: flex;
+  flex-direction: column;
 }
 
 .countdownDiv > h1, h2{

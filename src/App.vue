@@ -65,14 +65,13 @@
       }
 
     const recalcRemainingTimeForRockets = setInterval (function() {
-      for(let i = 0; i <= rocketsList.value[i].net.length; i++) {
+      for(let i = 0; i < rocketsList.value.length; i++) {
           launchDate.value = new Date(rocketsList.value[i].net).getTime();
           launchDate.value = launchDate.value - currentDate.value;
           days.value = Math.floor(launchDate.value / (1000*60*60*24));
           hours.value = Math.floor((launchDate.value % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           minutes.value = Math.floor((launchDate.value % (1000 * 60 * 60)) / (1000 * 60));
           seconds.value = Math.floor((launchDate.value % (1000 * 60)) / 1000);
-          console.log(launchDate.value)
           if(seconds.value <= 9){
           seconds.value = "0" + seconds.value
           }

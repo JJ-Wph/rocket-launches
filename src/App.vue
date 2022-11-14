@@ -4,9 +4,36 @@
     <img :src="launch.image" alt="rocket img">
     <p>{{launch.launch_service_provider.name}}</p>
     <p><b>Launch location:</b> {{launch.pad.location.name}}</p>
-    <div class="countdownDiv">
-    <h2>{{launch.launch_time}}</h2>
-    <h2>{{dateFormat}}</h2>
+    <h1 v-if="launchDate < 0">LAUNCHED</h1>
+    <div class="countdownDiv" v-if="launchDate > 0">
+      <div>
+        <h2> {{launch.launch_time_days}}</h2>
+        <p>Days</p>
+      </div>
+      <div>
+        <h2>:</h2>
+        <p>:</p>
+      </div>
+      <div>
+        <h2>{{launch.launch_time_hours}}</h2>
+        <p>Hours</p>
+      </div>
+      <div>
+        <h2>:</h2>
+        <p>:</p>
+      </div>
+      <div>
+        <h2>{{launch.launch_time_minutes}}</h2>
+        <p>Mins</p>
+      </div>
+      <div>
+        <h2>:</h2>
+        <p>:</p>
+      </div>
+      <div>
+        <h2>{{launch.launch_time_seconds}}</h2>
+        <p>Secs</p>
+      </div>
     </div>
   </div>
 </template>
@@ -19,9 +46,8 @@
 
   setup(){
     let rocketsList = ref(null);
-    let launchDate = ref(null);
-    let currentDate = ref(null);
-    let dateFormat = ref(0);
+    let launchDate = ref('');
+    let currentDate = ref('');
     let days = ref(0);
     let hours = ref(0);
     let minutes = ref(0);
@@ -35,7 +61,6 @@
         axios.get('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=6')
         .then(response => {
           rocketsList.value = response.data.results;
-          console.log(rocketsList.value);
         })
       }
 
@@ -43,12 +68,11 @@
       for(let i = 0; i <= rocketsList.value[i].net.length; i++) {
           launchDate.value = new Date(rocketsList.value[i].net).getTime();
           launchDate.value = launchDate.value - currentDate.value;
-          console.log(launchDate.value);
           days.value = Math.floor(launchDate.value / (1000*60*60*24));
           hours.value = Math.floor((launchDate.value % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           minutes.value = Math.floor((launchDate.value % (1000 * 60 * 60)) / (1000 * 60));
           seconds.value = Math.floor((launchDate.value % (1000 * 60)) / 1000);
-
+          console.log(launchDate.value)
           if(seconds.value <= 9){
           seconds.value = "0" + seconds.value
           }
@@ -64,10 +88,11 @@
 
           if(launchDate.value < 0) {
             rocketsList.value[i].launch_time = 'Launched';
-            dateFormat.value = ''
           } else {
-            rocketsList.value[i].launch_time = days.value + ' : ' + hours.value + '  :  ' + minutes.value + '  :  ' + seconds.value;
-            dateFormat.value = 'Days : Hrs : Min : Sec';
+            rocketsList.value[i].launch_time_days = days.value;
+            rocketsList.value[i].launch_time_hours = hours.value; 
+            rocketsList.value[i].launch_time_minutes = minutes.value;
+            rocketsList.value[i].launch_time_seconds = seconds.value;
           }
       }
     }, 1000)
@@ -83,7 +108,6 @@
       getData,
       currentDate,
       launchDate,
-      dateFormat,
       currentMoment,
       rocketsList,
       recalcRemainingTimeForRockets,
@@ -92,63 +116,79 @@
       days,
       hours,
       minutes,
-      seconds
+      seconds,
     }
   }
 }
 </script>
 
 <style>
-#app {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: rgb(216, 221, 227);
-  height: 100%;
-  width: 100%;
+  #app {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: rgb(216, 221, 227);
+    height: 100%;
+    width: 100%;
+  }
 
-}
+  .launchCard{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    background: rgba( 255, 255, 255, 0.25 );
+    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+    backdrop-filter: blur( 14.5px );
+    -webkit-backdrop-filter: blur( 14.5px );
+    border-radius: 10px;
+    border: 1px solid rgba( 255, 255, 255, 0.18 );
+    margin: 16px 10px 16px 10px;
+    width: 450px;
+    height: 380px;
+  }
 
-.launchCard{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
-  background: rgba( 255, 255, 255, 0.25 );
-  box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
-  backdrop-filter: blur( 14.5px );
-  -webkit-backdrop-filter: blur( 14.5px );
-  border-radius: 10px;
-  border: 1px solid rgba( 255, 255, 255, 0.18 );
-  margin: 16px 10px 16px 10px;
-  width: 350px;
-}
+  img {
+    width: 11rem;
+    height: 11rem;
+  }
 
-img {
-  width: 10rem;
-  height: 10rem;
-}
+  p {
+    margin: 0.5rem
+  }
 
-p {
-  margin: 0.5rem
-}
+  .countdownDiv {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+  }
 
-.countdownDiv {
-  display: flex;
-  flex-direction: column;
-}
+  .countdownDiv > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
 
-.countdownDiv > h1, h2{
-  margin: 0;
-  letter-spacing: 4px;
-}
+  .countdownDiv > div:nth-child(odd) {
+    margin: 0.5rem;
+  }
 
-.countdownDiv > h3{
-  width: 0 15px 0 15px;
-}
+  .countdownDiv > div > h2 {
+    margin: 0.25rem;
+  }
+
+  .countdownDiv > div > p {
+    margin: 0;
+  }
+
+  .countdownDiv > h1, h2{
+    letter-spacing: 4px;
+  }
 
 </style>

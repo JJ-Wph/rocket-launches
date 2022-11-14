@@ -133,7 +133,7 @@ export default {
     border-radius: 10px;
     border: 1px solid rgba( 255, 255, 255, 0.18 );
     margin: 1rem 0.6rem 1rem 0.6rem;
-    width: 450px;
+    width: 380px;
     height: 380px;
   }
 

@@ -39,5 +39,7 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+    margin: 0;
+    padding: 0;
   }
 </style>

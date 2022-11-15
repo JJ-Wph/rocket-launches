@@ -122,6 +122,7 @@ export default {
 <style scoped>
 .launchCard{
     display: flex;
+    flex: 1 1 30%;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
@@ -132,8 +133,6 @@ export default {
     border-radius: 10px;
     border: 1px solid rgba( 255, 255, 255, 0.18 );
     margin: 1rem 0.6rem 1rem 0.6rem;
-    width: 380px;
-    height: 380px;
   }
 
   img {
